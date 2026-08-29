@@ -11,6 +11,7 @@
 - [Adding Photos](#adding-photos)
 - [Adding News & Events](#adding-news--events)
 - [Updating Staff & Management](#updating-staff--management)
+- [Food Donation Booking](#food-donation-booking)
 - [Development](#development)
 - [Deployment via GitHub Pages](#deployment-via-github-pages)
 - [Custom Domain Setup](#custom-domain-setup)
@@ -43,6 +44,7 @@ This is the official website for **P. Balakrishnan Master Memorial Special Schoo
 | **Our Team** | `/our-team` | Management committee with contacts, staff roles |
 | **Gallery** | `/gallery` | Filterable photo gallery with lightbox |
 | **News & Events** | `/news-events` | News articles, media coverage, achievements |
+| **Food Donation** | `/food-donation` | Meal sponsorship booking system — choose date, meal type (breakfast/lunch), menu items, and provide donor details |
 | **Support Us** | `/support` | 8 ways to help, bank details, tax exemption info, donation transparency |
 | **Contact** | `/contact` | Contact info, management contacts, Google Maps, FAQ |
 
@@ -57,6 +59,7 @@ This is the official website for **P. Balakrishnan Master Memorial Special Schoo
 - ❓ **FAQ Accordion** — Expandable questions and answers
 - 📱 **Responsive** — Works on mobile, tablet, and desktop
 - ♿ **Accessible** — Keyboard navigation, ARIA labels, skip links, focus states
+- 🍽️ **Food Donation Booking** — Book breakfast/lunch meals for students, calendar view, menu selection
 - 🔍 **SEO Optimized** — Meta tags, Schema.org, sitemap, robots.txt
 
 ---
@@ -301,6 +304,65 @@ The homepage news ticker will automatically include new items.
 ## Updating Staff & Management
 
 Edit the `management` and `staff` arrays in `siteData.ts`. See the [How to Update Content](#how-to-update-content) section for the format.
+
+---
+
+## Food Donation Booking
+
+The **Food Donation** page (`/food-donation`) allows community members to sponsor meals for students.
+
+### How It Works
+
+1. **Choose Meal Type** — Breakfast or Lunch
+2. **Pick a Date** — Calendar shows next 30 school days (weekends & Kerala holidays excluded)
+3. **Select Menu Items** — Choose what you'd like to provide:
+   - **Breakfast**: Puttu & Kadala, Idli & Sambar, Dosa & Chutney, Appam & Stew, Upma, Sadhya, Custom
+   - **Lunch**: Biriyani, Naichor & Chicken Curry, Sadhya (Full Meals), Rice & Fish Curry, Vegetarian Meals, Porotta & Beef, Custom
+4. **Enter Your Details** — Name + 10-digit phone number (validated)
+5. **Confirm Booking** — Booking is saved and visible to others
+
+### Features
+
+- ✅ Visual calendar showing **available (green)** vs **booked (red)** slots
+- ✅ Each date has **2 slots**: breakfast and lunch (independent bookings)
+- ✅ **Weekends and Kerala holidays** are automatically excluded
+- ✅ **Phone number validation** (Indian 10-digit mobile)
+- ✅ **Bilingual** — Works in both English and Malayalam
+- ✅ Upcoming bookings visible in the sidebar
+
+### Data Storage
+
+Bookings are stored in **localStorage** (browser storage). This means:
+- No backend or database needed
+- Bookings persist per browser/device
+- In a production scenario, you may want to integrate with a backend API for shared visibility
+
+### Customizing Menu Items
+
+Edit the `MENU_ITEMS` constant in `src/app/food-donation/page.tsx`:
+
+```typescript
+const MENU_ITEMS = {
+  breakfast: [
+    { id: "puttu_kadala", name: "Puttu & Kadala Curry", nameMl: "പുട്ടും കടല കറിയും", emoji: "🍚" },
+    // Add more items...
+  ],
+  lunch: [
+    { id: "biriyani", name: "Biriyani", nameMl: "ബിരിയാണി", emoji: "🍛" },
+    // Add more items...
+  ],
+};
+```
+
+### Customizing Holidays
+
+Edit the `KERALA_HOLIDAYS` array in the same file to add/remove holiday dates:
+
+```typescript
+const KERALA_HOLIDAYS = [
+  "2026-01-01", "2026-01-26", // ...
+];
+```
 
 ---
 

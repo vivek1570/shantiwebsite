@@ -22,6 +22,15 @@ export default function Hero() {
 
       {/* Content */}
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        {/* School Logo */}
+        <div className="mb-6 animate-fade-in-up">
+          <img
+            src="/images/logo.jpg"
+            alt="P. Balakrishnan Master Memorial Special School Logo"
+            className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full mx-auto shadow-xl border-4 border-white/30 object-cover"
+          />
+        </div>
+
         {/* Organization */}
         <p className="text-accent font-medium text-sm sm:text-base tracking-wide uppercase mb-4 animate-fade-in-up">
           {t(schoolInfo.organization, schoolInfo.organizationMl)}

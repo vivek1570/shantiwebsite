@@ -25,9 +25,11 @@ export default function Navbar() {
             className="flex items-center gap-3 flex-shrink-0 group"
             aria-label={`${schoolInfo.currentName} - Home`}
           >
-            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-primary flex items-center justify-center text-white font-heading text-lg lg:text-xl font-bold shadow-md group-hover:bg-primary-dark transition-colors">
-              P
-            </div>
+            <img
+              src="/images/logo.jpg"
+              alt="School Logo"
+              className="w-10 h-10 lg:w-12 lg:h-12 rounded-full shadow-md object-cover"
+            />
             <div className="hidden sm:block">
               <p className="text-sm lg:text-base font-heading font-bold text-primary leading-tight max-w-[260px]">
                 {t(schoolInfo.currentName, schoolInfo.currentNameMl)}

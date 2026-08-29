@@ -14,9 +14,11 @@ export default function Footer() {
           {/* School Info */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white font-heading text-xl font-bold">
-                P
-              </div>
+              <img
+                src="/images/logo.jpg"
+                alt="School Logo"
+                className="w-12 h-12 rounded-full object-cover"
+              />
               <div>
                 <h3 className="font-heading font-bold text-lg leading-tight">
                   {t(schoolInfo.currentName, schoolInfo.currentNameMl)}

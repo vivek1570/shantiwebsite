@@ -460,6 +460,11 @@ export const navLinks = [
     label: "News & Events",
     labelMl: "വാർത്തകളും പരിപാടികളും",
   },
+  {
+    href: "/food-donation",
+    label: "Food Donation",
+    labelMl: "ഭക്ഷണ സംഭാവന",
+  },
   { href: "/support", label: "Support Us", labelMl: "ഞങ്ങളെ സഹായിക്കൂ" },
   { href: "/contact", label: "Contact", labelMl: "ബന്ധപ്പെടുക" },
 ];
