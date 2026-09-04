@@ -284,8 +284,8 @@ export default function FoodDonationPage() {
                   <button
                     onClick={() => { setSelectedMeal("breakfast"); setSelectedMenuItems([]); }}
                     className={`p-5 rounded-xl border-2 text-center transition-all duration-200 ${selectedMeal === "breakfast"
-                        ? "border-primary bg-primary/5 shadow-md"
-                        : "border-border hover:border-primary/30"
+                      ? "border-primary bg-primary/5 shadow-md"
+                      : "border-border hover:border-primary/30"
                       }`}
                   >
                     <span className="text-3xl block mb-2">🌅</span>
@@ -295,8 +295,8 @@ export default function FoodDonationPage() {
                   <button
                     onClick={() => { setSelectedMeal("lunch"); setSelectedMenuItems([]); }}
                     className={`p-5 rounded-xl border-2 text-center transition-all duration-200 ${selectedMeal === "lunch"
-                        ? "border-primary bg-primary/5 shadow-md"
-                        : "border-border hover:border-primary/30"
+                      ? "border-primary bg-primary/5 shadow-md"
+                      : "border-border hover:border-primary/30"
                       }`}
                   >
                     <span className="text-3xl block mb-2">☀️</span>
@@ -334,10 +334,10 @@ export default function FoodDonationPage() {
                         onClick={() => !isBooked && setSelectedDate(dateStr)}
                         disabled={isBooked}
                         className={`p-3 rounded-xl border-2 text-center transition-all duration-200 ${isSelected
-                            ? "border-primary bg-primary text-white shadow-md"
-                            : isBooked
-                              ? "border-red-200 bg-red-50 cursor-not-allowed opacity-80"
-                              : "border-border hover:border-success hover:bg-success/5"
+                          ? "border-primary bg-primary text-white shadow-md"
+                          : isBooked
+                            ? "border-red-200 bg-red-50 cursor-not-allowed opacity-80"
+                            : "border-border hover:border-success hover:bg-success/5"
                           }`}
                         title={isBooked ? `Booked by ${booking?.donorName}` : `Available - ${formatDate(dateStr)}`}
                       >
@@ -386,8 +386,8 @@ export default function FoodDonationPage() {
                         key={item.id}
                         onClick={() => toggleMenuItem(item.id)}
                         className={`flex items-center gap-3 p-4 rounded-xl border-2 text-left transition-all duration-200 ${isChecked
-                            ? "border-primary bg-primary/5 shadow-sm"
-                            : "border-border hover:border-primary/30"
+                          ? "border-primary bg-primary/5 shadow-sm"
+                          : "border-border hover:border-primary/30"
                           }`}
                       >
                         <span className="text-2xl flex-shrink-0">{item.emoji}</span>
@@ -454,8 +454,8 @@ export default function FoodDonationPage() {
                   onClick={handleBook}
                   disabled={!isFormValid}
                   className={`mt-6 w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 ${isFormValid
-                      ? "bg-secondary text-white hover:bg-secondary-light shadow-md hover:shadow-lg cursor-pointer"
-                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    ? "bg-secondary text-white hover:bg-secondary-light shadow-md hover:shadow-lg cursor-pointer"
+                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
                     }`}
                 >
                   {submitting
@@ -552,8 +552,8 @@ export default function FoodDonationPage() {
                                 {formatDate(booking.date)}
                               </span>
                               <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${booking.mealType === "breakfast"
-                                  ? "bg-amber-100 text-amber-700"
-                                  : "bg-orange-100 text-orange-700"
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-orange-100 text-orange-700"
                                 }`}>
                                 {booking.mealType === "breakfast" ? "🌅 " : "☀️ "}
                                 {t(
