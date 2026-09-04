@@ -1,10 +1,60 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { newsItems } from "@/data/siteData";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
+
+interface FirestoreEvent {
+  id: string;
+  title: string;
+  titleMl: string;
+  date: string;
+  summary: string;
+  summaryMl: string;
+  category: string;
+  imageUrl: string;
+}
 
 export default function NewsEventsPage() {
   const { t } = useLanguage();
+  const [firestoreEvents, setFirestoreEvents] = useState<FirestoreEvent[]>([]);
+
+  // Load admin-added events from Firestore
+  useEffect(() => {
+    async function loadEvents() {
+      try {
+        const q = query(collection(db, "events"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        setFirestoreEvents(
+          snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as FirestoreEvent))
+        );
+      } catch (err) {
+        console.error("Error loading events from Firestore:", err);
+      }
+    }
+    loadEvents();
+  }, []);
+
+  // Combine static + dynamic events
+  const allEvents = [
+    ...firestoreEvents.map((e) => ({
+      id: e.id,
+      title: e.title,
+      titleMl: e.titleMl,
+      date: e.date,
+      summary: e.summary,
+      summaryMl: e.summaryMl,
+      category: e.category,
+      image: e.imageUrl,
+      isFirestore: true,
+    })),
+    ...newsItems.map((item) => ({
+      ...item,
+      isFirestore: false,
+    })),
+  ];
 
   return (
     <>
@@ -25,7 +75,7 @@ export default function NewsEventsPage() {
       <section className="py-16 lg:py-24 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="space-y-8">
-            {newsItems.map((item) => (
+            {allEvents.map((item) => (
               <article
                 key={item.id}
                 className="bg-warm-bg p-6 lg:p-8 rounded-2xl border border-border hover:shadow-lg transition-shadow duration-300"
@@ -49,6 +99,11 @@ export default function NewsEventsPage() {
                       {item.date && (
                         <span className="text-text-light text-xs">
                           {item.date}
+                        </span>
+                      )}
+                      {item.isFirestore && (
+                        <span className="px-2 py-0.5 bg-accent/10 text-accent text-[10px] font-bold rounded-full">
+                          NEW
                         </span>
                       )}
                     </div>

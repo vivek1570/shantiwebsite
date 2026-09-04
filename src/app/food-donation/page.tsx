@@ -2,6 +2,15 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useLanguage } from "@/context/LanguageContext";
+import { db } from "@/lib/firebase";
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  Timestamp,
+} from "firebase/firestore";
 
 // ============================================================
 // Types
@@ -48,8 +57,6 @@ const KERALA_HOLIDAYS = [
   "2026-11-14", "2026-12-25",
 ];
 
-const STORAGE_KEY = "shantiweb_food_bookings";
-
 // ============================================================
 // Helper Functions
 // ============================================================
@@ -89,10 +96,6 @@ function getNextNSchoolDays(n: number): string[] {
   return days;
 }
 
-function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
-}
-
 // ============================================================
 // Component
 // ============================================================
@@ -108,35 +111,45 @@ export default function FoodDonationPage() {
   const [donorPhone, setDonorPhone] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [phoneError, setPhoneError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const availableDays = getNextNSchoolDays(30);
 
-  // Load bookings from localStorage
+  // Load bookings from Firestore in real-time
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        setBookings(JSON.parse(stored));
+    const q = query(collection(db, "foodDonations"), orderBy("bookedAt", "desc"));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Booking[];
+        setBookings(data);
+      },
+      (err) => {
+        console.error("Error listening to food donations:", err);
+        // Fallback: try loading from localStorage for offline support
+        try {
+          const stored = localStorage.getItem("shantiweb_food_bookings");
+          if (stored) {
+            setBookings(JSON.parse(stored));
+          }
+        } catch {
+          // ignore
+        }
       }
-    } catch {
-      // localStorage not available
-    }
-  }, []);
-
-  // Save bookings to localStorage
-  const saveBookings = useCallback((newBookings: Booking[]) => {
-    setBookings(newBookings);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newBookings));
-    } catch {
-      // localStorage not available
-    }
+    );
+    return () => unsubscribe();
   }, []);
 
   // Check if a slot is booked
-  const getBookingForSlot = (date: string, mealType: "breakfast" | "lunch"): Booking | undefined => {
-    return bookings.find((b) => b.date === date && b.mealType === mealType);
-  };
+  const getBookingForSlot = useCallback(
+    (date: string, mealType: "breakfast" | "lunch"): Booking | undefined => {
+      return bookings.find((b) => b.date === date && b.mealType === mealType);
+    },
+    [bookings]
+  );
 
   // Toggle menu item
   const toggleMenuItem = (itemId: string) => {
@@ -151,8 +164,8 @@ export default function FoodDonationPage() {
     return /^[6-9]\d{9}$/.test(cleaned);
   };
 
-  // Handle booking
-  const handleBook = () => {
+  // Handle booking — save to Firestore
+  const handleBook = async () => {
     setPhoneError("");
 
     if (!selectedDate) return;
@@ -166,24 +179,55 @@ export default function FoodDonationPage() {
     const existingBooking = getBookingForSlot(selectedDate, selectedMeal);
     if (existingBooking) return;
 
-    const newBooking: Booking = {
-      id: generateId(),
-      date: selectedDate,
-      mealType: selectedMeal,
-      menuItems: selectedMenuItems,
-      donorName: donorName.trim(),
-      donorPhone: donorPhone.trim(),
-      bookedAt: new Date().toISOString(),
-    };
+    setSubmitting(true);
+    try {
+      const bookingData = {
+        date: selectedDate,
+        mealType: selectedMeal,
+        menuItems: selectedMenuItems,
+        donorName: donorName.trim(),
+        donorPhone: donorPhone.trim(),
+        bookedAt: new Date().toISOString(),
+        createdAt: Timestamp.now(),
+      };
 
-    saveBookings([...bookings, newBooking]);
-    setShowSuccess(true);
-    setSelectedDate("");
-    setSelectedMenuItems([]);
-    setDonorName("");
-    setDonorPhone("");
+      await addDoc(collection(db, "foodDonations"), bookingData);
 
-    setTimeout(() => setShowSuccess(false), 4000);
+      setShowSuccess(true);
+      setSelectedDate("");
+      setSelectedMenuItems([]);
+      setDonorName("");
+      setDonorPhone("");
+
+      setTimeout(() => setShowSuccess(false), 4000);
+    } catch (err) {
+      console.error("Error saving booking:", err);
+      // Fallback: save to localStorage
+      try {
+        const fallbackBooking: Booking = {
+          id: Date.now().toString(36) + Math.random().toString(36).substring(2, 7),
+          date: selectedDate,
+          mealType: selectedMeal,
+          menuItems: selectedMenuItems,
+          donorName: donorName.trim(),
+          donorPhone: donorPhone.trim(),
+          bookedAt: new Date().toISOString(),
+        };
+        const updatedBookings = [...bookings, fallbackBooking];
+        setBookings(updatedBookings);
+        localStorage.setItem("shantiweb_food_bookings", JSON.stringify(updatedBookings));
+        setShowSuccess(true);
+        setSelectedDate("");
+        setSelectedMenuItems([]);
+        setDonorName("");
+        setDonorPhone("");
+        setTimeout(() => setShowSuccess(false), 4000);
+      } catch {
+        // ignore
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const isFormValid =
@@ -191,7 +235,8 @@ export default function FoodDonationPage() {
     donorName.trim() &&
     donorPhone.trim() &&
     selectedMenuItems.length > 0 &&
-    !getBookingForSlot(selectedDate, selectedMeal);
+    !getBookingForSlot(selectedDate, selectedMeal) &&
+    !submitting;
 
   return (
     <>
@@ -238,11 +283,10 @@ export default function FoodDonationPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     onClick={() => { setSelectedMeal("breakfast"); setSelectedMenuItems([]); }}
-                    className={`p-5 rounded-xl border-2 text-center transition-all duration-200 ${
-                      selectedMeal === "breakfast"
+                    className={`p-5 rounded-xl border-2 text-center transition-all duration-200 ${selectedMeal === "breakfast"
                         ? "border-primary bg-primary/5 shadow-md"
                         : "border-border hover:border-primary/30"
-                    }`}
+                      }`}
                   >
                     <span className="text-3xl block mb-2">🌅</span>
                     <span className="font-bold text-text-dark block">{t("Breakfast", "പ്രാതൽ")}</span>
@@ -250,11 +294,10 @@ export default function FoodDonationPage() {
                   </button>
                   <button
                     onClick={() => { setSelectedMeal("lunch"); setSelectedMenuItems([]); }}
-                    className={`p-5 rounded-xl border-2 text-center transition-all duration-200 ${
-                      selectedMeal === "lunch"
+                    className={`p-5 rounded-xl border-2 text-center transition-all duration-200 ${selectedMeal === "lunch"
                         ? "border-primary bg-primary/5 shadow-md"
                         : "border-border hover:border-primary/30"
-                    }`}
+                      }`}
                   >
                     <span className="text-3xl block mb-2">☀️</span>
                     <span className="font-bold text-text-dark block">{t("Lunch", "ഉച്ചഭക്ഷണം")}</span>
@@ -290,13 +333,12 @@ export default function FoodDonationPage() {
                         key={dateStr}
                         onClick={() => !isBooked && setSelectedDate(dateStr)}
                         disabled={isBooked}
-                        className={`p-3 rounded-xl border-2 text-center transition-all duration-200 ${
-                          isSelected
+                        className={`p-3 rounded-xl border-2 text-center transition-all duration-200 ${isSelected
                             ? "border-primary bg-primary text-white shadow-md"
                             : isBooked
-                            ? "border-red-200 bg-red-50 cursor-not-allowed opacity-80"
-                            : "border-border hover:border-success hover:bg-success/5"
-                        }`}
+                              ? "border-red-200 bg-red-50 cursor-not-allowed opacity-80"
+                              : "border-border hover:border-success hover:bg-success/5"
+                          }`}
                         title={isBooked ? `Booked by ${booking?.donorName}` : `Available - ${formatDate(dateStr)}`}
                       >
                         <span className={`text-xs block ${isSelected ? "text-white/80" : "text-text-muted"}`}>
@@ -343,11 +385,10 @@ export default function FoodDonationPage() {
                       <button
                         key={item.id}
                         onClick={() => toggleMenuItem(item.id)}
-                        className={`flex items-center gap-3 p-4 rounded-xl border-2 text-left transition-all duration-200 ${
-                          isChecked
+                        className={`flex items-center gap-3 p-4 rounded-xl border-2 text-left transition-all duration-200 ${isChecked
                             ? "border-primary bg-primary/5 shadow-sm"
                             : "border-border hover:border-primary/30"
-                        }`}
+                          }`}
                       >
                         <span className="text-2xl flex-shrink-0">{item.emoji}</span>
                         <div className="flex-1">
@@ -355,9 +396,8 @@ export default function FoodDonationPage() {
                             {t(item.name, item.nameMl)}
                           </span>
                         </div>
-                        <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center flex-shrink-0 ${
-                          isChecked ? "border-primary bg-primary" : "border-border"
-                        }`}>
+                        <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center flex-shrink-0 ${isChecked ? "border-primary bg-primary" : "border-border"
+                          }`}>
                           {isChecked && (
                             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -400,9 +440,8 @@ export default function FoodDonationPage() {
                       value={donorPhone}
                       onChange={(e) => { setDonorPhone(e.target.value); setPhoneError(""); }}
                       placeholder={t("10-digit mobile number", "10 അക്ക മൊബൈൽ നമ്പർ")}
-                      className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none text-text-dark text-sm transition-colors ${
-                        phoneError ? "border-red-400 focus:border-red-500" : "border-border focus:border-primary"
-                      }`}
+                      className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none text-text-dark text-sm transition-colors ${phoneError ? "border-red-400 focus:border-red-500" : "border-border focus:border-primary"
+                        }`}
                     />
                     {phoneError && (
                       <p className="text-red-500 text-xs mt-1">{phoneError}</p>
@@ -414,13 +453,15 @@ export default function FoodDonationPage() {
                 <button
                   onClick={handleBook}
                   disabled={!isFormValid}
-                  className={`mt-6 w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 ${
-                    isFormValid
+                  className={`mt-6 w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 ${isFormValid
                       ? "bg-secondary text-white hover:bg-secondary-light shadow-md hover:shadow-lg cursor-pointer"
                       : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  }`}
+                    }`}
                 >
-                  {t("Confirm Food Donation Booking", "ഭക്ഷണ സംഭാവന ബുക്കിംഗ് സ്ഥിരീകരിക്കുക")} 🍽️
+                  {submitting
+                    ? t("Saving...", "സേവ് ചെയ്യുന്നു...")
+                    : t("Confirm Food Donation Booking", "ഭക്ഷണ സംഭാവന ബുക്കിംഗ് സ്ഥിരീകരിക്കുക")}{" "}
+                  🍽️
                 </button>
 
                 {!selectedDate && (
@@ -510,11 +551,10 @@ export default function FoodDonationPage() {
                               <span className="text-sm font-bold text-text-dark">
                                 {formatDate(booking.date)}
                               </span>
-                              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                                booking.mealType === "breakfast"
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${booking.mealType === "breakfast"
                                   ? "bg-amber-100 text-amber-700"
                                   : "bg-orange-100 text-orange-700"
-                              }`}>
+                                }`}>
                                 {booking.mealType === "breakfast" ? "🌅 " : "☀️ "}
                                 {t(
                                   booking.mealType === "breakfast" ? "Breakfast" : "Lunch",

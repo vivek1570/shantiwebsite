@@ -1,18 +1,58 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { galleryImages, galleryCategories } from "@/data/siteData";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
+
+interface GalleryImage {
+  src: string;
+  alt: string;
+  altMl: string;
+  category: string;
+  caption: string;
+  captionMl: string;
+}
 
 export default function GalleryPage() {
   const { t } = useLanguage();
   const [activeCategory, setActiveCategory] = useState("all");
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [allImages, setAllImages] = useState<GalleryImage[]>(galleryImages);
+
+  // Load admin-uploaded photos from Firestore
+  useEffect(() => {
+    async function loadFirestoreImages() {
+      try {
+        const q = query(collection(db, "gallery"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        const firestoreImages: GalleryImage[] = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            src: data.src,
+            alt: data.alt,
+            altMl: data.altMl,
+            category: data.category,
+            caption: data.caption,
+            captionMl: data.captionMl,
+          };
+        });
+        // Combine: Firestore images first, then static images
+        setAllImages([...firestoreImages, ...galleryImages]);
+      } catch (err) {
+        console.error("Error loading gallery from Firestore:", err);
+        // Fallback to static images only
+        setAllImages(galleryImages);
+      }
+    }
+    loadFirestoreImages();
+  }, []);
 
   const filtered =
     activeCategory === "all"
-      ? galleryImages
-      : galleryImages.filter((img) => img.category === activeCategory);
+      ? allImages
+      : allImages.filter((img) => img.category === activeCategory);
 
   return (
     <>
@@ -53,7 +93,7 @@ export default function GalleryPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((image, index) => (
               <button
-                key={index}
+                key={`${image.src}-${index}`}
                 onClick={() => setLightboxImage(image.src)}
                 className="group relative aspect-[4/3] rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer"
                 aria-label={`View ${t(image.caption, image.captionMl)}`}

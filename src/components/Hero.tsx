@@ -12,13 +12,18 @@ export default function Hero() {
       className="relative min-h-[85vh] flex items-center justify-center overflow-hidden"
       aria-label="Hero section"
     >
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary-dark to-[#0E3A42]" />
+      {/* Background image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/images/shanti_cover.jpg')" }}
+      />
+
+      {/* Dark overlay for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
 
       {/* Decorative shapes */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-secondary/10 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" />
-      <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-primary-light/10 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2" />
 
       {/* Content */}
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -37,24 +42,24 @@ export default function Hero() {
         </p>
 
         {/* School name */}
-        <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-2">
+        <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-2 drop-shadow-lg">
           {t(schoolInfo.currentName, schoolInfo.currentNameMl)}
         </h1>
 
         {/* Location */}
-        <p className="text-white/70 text-lg sm:text-xl font-medium mb-6">
+        <p className="text-white/80 text-lg sm:text-xl font-medium mb-6 drop-shadow-md">
           {t(schoolInfo.location, schoolInfo.locationMl)},{" "}
           {t(schoolInfo.district, schoolInfo.districtMl)},{" "}
           {t("Kerala", "കേരളം")}
         </p>
 
         {/* Motto */}
-        <p className="text-accent/90 italic text-base sm:text-lg mb-4">
+        <p className="text-accent/90 italic text-base sm:text-lg mb-4 drop-shadow-md">
           &ldquo;{t(schoolInfo.motto, schoolInfo.mottoMl)}&rdquo;
         </p>
 
         {/* Tagline */}
-        <p className="text-white/80 text-base sm:text-lg lg:text-xl max-w-3xl mx-auto mb-10 leading-relaxed">
+        <p className="text-white/85 text-base sm:text-lg lg:text-xl max-w-3xl mx-auto mb-10 leading-relaxed drop-shadow-md">
           {t(schoolInfo.tagline, schoolInfo.taglineMl)}
         </p>
 
