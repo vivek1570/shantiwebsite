@@ -52,8 +52,7 @@ const MENU_ITEMS = {
 // Kerala public holidays 2024-2026 (major ones)
 const KERALA_HOLIDAYS = [
   "2026-01-01", "2026-01-14", "2026-01-26", "2026-03-30", "2026-04-02",
-  "2026-04-10", "2026-04-14", "2026-05-01", "2026-08-15", "2026-08-26",
-  "2026-09-07", "2026-10-02", "2026-10-20", "2026-10-21", "2026-11-01",
+  "2026-04-10", "2026-04-14", "2026-05-01", "2026-08-15", "2026-08-26", "2026-10-02", "2026-10-20", "2026-10-21", "2026-11-01",
   "2026-11-14", "2026-12-25",
 ];
 
@@ -87,7 +86,14 @@ function getNextNSchoolDays(n: number): string[] {
   current.setDate(current.getDate() + 1); // start from tomorrow
 
   while (days.length < n) {
-    const dateStr = current.toISOString().split("T")[0];
+    // const dateStr = current.toISOString().split("T")[0];
+    const dateStr = current.toLocaleDateString("en-CA");
+    console.log("___start")
+    console.log(current)
+    console.log(isWeekend(current))
+    console.log(dateStr)
+    console.log(isHoliday(dateStr))
+    console.log("end------")
     if (!isWeekend(current) && !isHoliday(dateStr)) {
       days.push(dateStr);
     }
@@ -114,6 +120,7 @@ export default function FoodDonationPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const availableDays = getNextNSchoolDays(30);
+  console.log(availableDays)
 
   // Load bookings from Firestore in real-time
   useEffect(() => {
