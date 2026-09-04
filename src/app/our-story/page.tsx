@@ -70,7 +70,7 @@ export default function OurStoryPage() {
             </div>
             <div className="rounded-2xl overflow-hidden shadow-lg">
               <img
-                src="/images/shanti1.jpg"
+                src="/images/shanti_new_5.jpg"
                 alt="School building and brochure information"
                 className="w-full h-full object-cover"
                 loading="lazy"

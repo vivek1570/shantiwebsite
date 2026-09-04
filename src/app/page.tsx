@@ -42,7 +42,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2 rounded-2xl overflow-hidden shadow-md">
               <img
-                src="/images/shanti3.jpg"
+                src="/images/photo-collage-shanti.png"
                 alt="Students engaged in various activities at the school"
                 className="w-full h-full object-cover"
                 loading="lazy"

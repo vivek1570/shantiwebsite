@@ -440,7 +440,7 @@ export const galleryImages = [
     captionMl: "വെട്ടം കലാസാംസ്‌കാരിക വേദിയും സ്‌കൂൾ വിവരങ്ങളും",
   },
   {
-    src: "/images/shanti3.jpg",
+    src: "/images/photo-collage-shanti.png",
     alt: "Students engaged in various activities at the school",
     altMl: "സ്‌കൂളിലെ വിവിധ പ്രവർത്തനങ്ങളിൽ ഏർപ്പെടുന്ന വിദ്യാർത്ഥികൾ",
     category: "activities",

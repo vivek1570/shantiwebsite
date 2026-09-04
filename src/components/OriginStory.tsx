@@ -15,7 +15,7 @@ export default function OriginStory() {
           <div className="relative">
             <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
               <img
-                src="/images/shanti1.jpg"
+                src="/images/shanti_new_5.jpg"
                 alt="School brochure showing the institution and its services"
                 className="w-full h-full object-cover"
                 loading="lazy"
